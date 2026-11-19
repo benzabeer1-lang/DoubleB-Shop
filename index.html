@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAG SHOP - Game Item & Currency Shop</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Kanit', sans-serif; }
+    .glass-card {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px border-slate-700/50;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+
+  <!-- Navbar -->
+  <nav class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center font-bold text-lg shadow-lg shadow-orange-500/20">
+          RG
+        </div>
+        <span class="text-xl font-bold tracking-wide text-white">RAG SHOP</span>
+        <span class="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-full hidden sm:inline">24 ชม.</span>
+      </div>
+
+      <div class="flex items-center gap-4 text-sm">
+        <button onclick="scrollToSection('games-section')" class="hover:text-cyan-400 transition hidden sm:inline">🏠 หน้าแรก</button>
+        <button onclick="scrollToSection('items-section')" class="hover:text-cyan-400 transition hidden sm:inline">🎒 สินค้าทั้งหมด</button>
+        <button onclick="toggleAdminModal()" class="hover:text-amber-400 transition">👑 จัดการร้าน (แอดมิน)</button>
+        <button onclick="openCartModal()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2 rounded-xl flex items-center gap-2 shadow-lg shadow-amber-500/20 transition">
+          🛒 ตะกร้า (<span id="cart-count">0</span>)
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Banner with Background Image -->
+  <header class="relative overflow-hidden bg-slate-900 py-16 md:py-24 border-b border-slate-800">
+    <div class="absolute inset-0 z-0">
+      <img src="https://image-placeholder-or-your-uploaded-image.jpg" id="hero-bg-img" alt="Hero Background" class="w-full h-full object-cover object-center filter brightness-50">
+      <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-transparent"></div>
+    </div>
+
+    <div class="relative z-10 max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+      <div class="space-y-4">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-800 text-cyan-300 text-xs">
+          <span>🎮</span> ร้านจำหน่ายไอเทมและเงินในเกมอันดับ 1
+        </div>
+        <h1 class="text-4xl md:text-5xl font-extrabold text-white leading-tight">
+          RAG & GAME <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">ITEM SHOP</span>
+        </h1>
+        <p class="text-slate-300 text-sm md:text-base leading-relaxed max-w-lg">
+          บริการแลกเปลี่ยนเงิน M, Zeny และไอเทมเกมออนไลน์ยอดนิยม การันตีปลอดภัย จัดส่งรวดเร็ว มีประวัติเครดิตแน่น
+        </p>
+        <div class="flex flex-wrap gap-3 pt-2">
+          <button onclick="scrollToSection('games-section')" class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold px-6 py-3 rounded-xl shadow-lg shadow-orange-500/30 transition">
+            🔥 เลือกซื้อสินค้า
+          </button>
+          <a href="https://line.me" target="_blank" class="bg-slate-800/80 hover:bg-slate-700 text-white border border-slate-700 px-6 py-3 rounded-xl transition flex items-center gap-2">
+            💬 ทักแชทสอบถาม
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-6xl mx-auto px-4 py-10 space-y-12">
+
+    <!-- 1. เลือกเกมที่ต้องการซื้อ -->
+    <section id="games-section">
+      <div class="flex justify-between items-end mb-6">
+        <div>
+          <h2 class="text-2xl font-bold flex items-center gap-2">
+            <span>🎮</span> เลือกเกมที่ต้องการซื้อ
+          </h2>
+          <p class="text-slate-400 text-sm">คลิกเลือกเกมเพื่อดูเรทเงินและรายการของในเกมนั้นๆ</p>
+        </div>
+        <button onclick="toggleAddGameModal()" class="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg text-cyan-400 transition">
+          + เพิ่มเกมใหม่
+        </button>
+      </div>
+
+      <div id="game-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+    <!-- 2. ส่วนช็อปปิ้งของเกมที่เลือก -->
+    <section id="shop-container" class="space-y-8">
+      
+      <!-- ชื่อเกมที่เลือกและตัวคำนวณเงิน -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- ฝั่งซ้าย: เครื่องคำนวณเงินในเกม (Calculator) -->
+        <div class="glass-card rounded-2xl p-6 border border-slate-800 relative overflow-hidden">
+          <div class="absolute -top-10 -right-10 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
+          
+          <div class="flex items-center gap-2 mb-4">
+            <span class="text-2xl">💰</span>
+            <h3 class="text-lg font-bold text-amber-400">คำนวณเงินในเกม</h3>
+          </div>
+
+          <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800 mb-4">
+            <p class="text-xs text-slate-400">เกมที่เลือก:</p>
+            <p id="calc-game-name" class="font-bold text-white text-base"></p>
+            <p id="calc-rate-display" class="text-xs text-emerald-400 mt-1 font-mono"></p>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs text-slate-300 mb-1" id="calc-input-label">จำนวนที่ต้องการซื้อ:</label>
+              <input type="number" id="currency-input" placeholder="0" oninput="calculateCurrency()"
+                     class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white font-mono focus:outline-none focus:border-amber-400">
+            </div>
+
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800/80 flex justify-between items-center">
+              <span class="text-xs text-slate-400">ยอดชำระ:</span>
+              <span id="calc-price-output" class="text-2xl font-bold text-amber-400 font-mono">0 ฿</span>
+            </div>
+
+            <button onclick="addCurrencyToCart()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-xl transition shadow-lg shadow-amber-500/20">
+              🛒 เพิ่มเงิน M/Zeny ลงตะกร้า
+            </button>
+          </div>
+        </div>
+
+        <!-- ฝั่งขวา: รายการไอเทมของเกมนี้ -->
+        <div id="items-section" class="lg:col-span-2 space-y-4">
+          <div class="flex justify-between items-center">
+            <h3 class="text-lg font-bold flex items-center gap-2">
+              <span>🎒</span> ไอเทม / ของในเกม <span id="item-game-badge" class="text-xs bg-slate-800 px-2.5 py-0.5 rounded-full text-slate-300 font-normal"></span>
+            </h3>
+            <button onclick="toggleAddItemModal()" class="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg text-emerald-400 transition">
+              + ลงขายไอเทมเพิ่ม
+            </button>
+          </div>
+
+          <div id="items-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Modal: ตะกร้าสินค้าและสรุปออเดอร์ -->
+  <div id="cart-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-lg font-bold flex items-center gap-2">🛒 สรุปรายการสั่งซื้อ</h3>
+        <button onclick="closeCartModal()" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+
+      <div id="cart-items-list" class="space-y-3 overflow-y-auto flex-1 pr-1">
+        <!-- Rendered by JS -->
+      </div>
+
+      <div class="border-t border-slate-800 pt-3 space-y-3">
+        <div class="flex justify-between items-center text-base font-bold">
+          <span>ยอดรวมทั้งหมด:</span>
+          <span id="cart-total-amount" class="text-amber-400 text-xl font-mono">0 ฿</span>
+        </div>
+
+        <div class="space-y-2 bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs">
+          <label class="block font-medium text-slate-300">ข้อมูลสำหรับจัดส่งของในเกม:</label>
+          <input type="text" id="order-ign" placeholder="ชื่อตัวละครในเกม (IGN)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white">
+          <input type="text" id="order-server" placeholder="เซิร์ฟเวอร์ / แชนแนล (Server/Ch)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white">
+          <input type="text" id="order-contact" placeholder="LINE ID หรือ เบอร์โทร" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white">
+        </div>
+
+        <button onclick="copyOrderMessage()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl transition flex items-center justify-center gap-2">
+          📋 คัดลอกใบสั่งซื้อ (ส่งทาง LINE / แชท)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: แอดมินจัดการร้าน -->
+  <div id="admin-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-lg font-bold">👑 ระบบจัดการร้าน (แอดมิน)</h3>
+        <button onclick="toggleAdminModal()" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+      <p class="text-xs text-slate-400">ข้อมูลสินค้าและเรทราคาจะถูกบันทึกไว้ในเบราว์เซอร์ของคุณอย่างปลอดภัย</p>
+      
+      <div class="space-y-2">
+        <button onclick="toggleAddGameModal()" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 p-3 rounded-xl text-left text-sm flex justify-between items-center">
+          <span>➕ เพิ่มเกมใหม่เข้าร้าน</span>
+          <span class="text-slate-400">➔</span>
+        </button>
+        <button onclick="toggleAddItemModal()" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 p-3 rounded-xl text-left text-sm flex justify-between items-center">
+          <span>➕ ลงไอเทมใหม่ในเกมปัจจุบัน</span>
+          <span class="text-slate-400">➔</span>
+        </button>
+        <button onclick="resetDefaultData()" class="w-full bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/50 p-3 rounded-xl text-left text-sm text-rose-300 flex justify-between items-center mt-4">
+          <span>🔄 รีเซ็ตข้อมูลกลับเป็นค่าเริ่มต้น</span>
+          <span>⚠️</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: ฟอร์มเพิ่มเกม -->
+  <div id="add-game-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-6 space-y-4">
+      <h3 class="text-lg font-bold">เพิ่มเกมใหม่</h3>
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-slate-300 mb-1">ชื่อเกม:</label>
+          <input type="text" id="new-game-name" placeholder="เช่น Black Desert" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white">
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-1">อีโมจิ:</label>
+          <input type="text" id="new-game-icon" placeholder="เช่น ⚔️, 🛡️, 🏹" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-300 mb-1">ชื่อหน่วยเงิน:</label>
+            <input type="text" id="new-game-unit" placeholder="เช่น Silver, M" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white">
+          </div>
+          <div>
+            <label class="block text-slate-300 mb-1">เรทฐาน (กี่ M/K):</label>
+            <input type="number" id="new-game-base" placeholder="เช่น 1" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white">
+          </div>
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-1">ราคาต่อเรทฐาน (บาท):</label>
+          <input type="number" id="new-game-price" placeholder="เช่น 95" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white">
+        </div>
+      </div>
+      <div class="flex gap-2 pt-2">
+        <button onclick="toggleAddGameModal()" class="w-1/2 bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs">ยกเลิก</button>
+        <button onclick="saveNewGame()" class="w-1/2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2 rounded-xl text-xs">บันทึก</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: ฟอร์มเพิ่มไอเทม -->
+  <div id="add-item-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-6 space-y-4">
+      <h3 class="text-lg font-bold">เพิ่มไอเทมใหม่</h3>
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-slate-300 mb-1">ชื่อไอเทม:</label>
+          <input type="text" id="new-item-name" placeholder="เช่น Ghostring Card" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white">
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-1">คำอธิบายสั้นๆ:</label>
+          <input type="text" id="new-item-desc" placeholder="เช่น การ์ดเสื้อคุณสมบัติ Ghost" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white">
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-1">ราคา (บาท):</label>
+          <input type="number" id="new-item-price" placeholder="เช่น 1500" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white">
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-1">ไอคอน / อีโมจิ:</label>
+          <input type="text" id="new-item-icon" placeholder="เช่น 👻, 🧤, 🗡️" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white">
+        </div>
+      </div>
+      <div class="flex gap-2 pt-2">
+        <button onclick="toggleAddItemModal()" class="w-1/2 bg-slate-800 hover:bg-slate-700 py-2 rounded-xl text-xs">ยกเลิก</button>
+        <button onclick="saveNewItem()" class="w-1/2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2 rounded-xl text-xs">เพิ่มสินค้า</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ข้อมูลเริ่มต้นสำหรับระบบ
+    const DEFAULT_DATA = {
+      selectedGameId: 'rag',
+      games: [
+        {
+          id: 'rag',
+          name: 'Ragnarok Classic',
+          icon: '⚔️',
+          currencyName: 'Zeny',
+          unit: 'M',
+          rateBase: 1,
+          ratePrice: 95,
+          items: [
+            { id: 101, name: 'การ์ด Ghostring', desc: 'การ์ดเสื้อธาตุวิญญาณ หายาก', price: 1500, icon: '👻' },
+            { id: 102, name: 'Elven Ears [1]', desc: 'หูเอลฟ์มีรูเจาะ พร้อมใส่การ์ด', price: 250, icon: '👂' },
+            { id: 103, name: '+7 กาต้าตัน 2 เหมือง', desc: 'Jur [3] อาวุธสายคริเบิ้ลแรง', price: 850, icon: '🗡️' }
+          ]
+        },
+        {
+          id: 'maple',
+          name: 'Maple Classic',
+          icon: '🍁',
+          currencyName: 'Meso',
+          unit: '100K',
+          rateBase: 100,
+          ratePrice: 95,
+          items: [
+            { id: 201, name: 'Glove Scroll Attack 60%', desc: 'ใบอัปเกรดถุงมือพลังโจมตีกายภาพ', price: 400, icon: '🧤' },
+            { id: 202, name: 'Dark Scroll for Claw 30%', desc: 'ใบดำกรงเล็บเพิ่มพลังโจมตี', price: 250, icon: '📜' }
+          ]
+        },
+        {
+          id: 'aion',
+          name: 'Aion 2',
+          icon: '🗡️',
+          currencyName: 'Kinah',
+          unit: 'M',
+          rateBase: 1,
+          ratePrice: 120,
+          items: [
+            { id: 301, name: 'Abyss Wings Box', desc: 'กล่องปีกอาบิสอัปเกรดความเร็ว', price: 990, icon: '🪶' }
+          ]
+        },
+        {
+          id: 'aetheria',
+          name: 'Aetheria',
+          icon: '🔮',
+          currencyName: 'Gold',
+          unit: '500K',
+          rateBase: 500,
+          ratePrice: 80,
+          items: [
+            { id: 401, name: 'Celestial Mount', desc: 'สัตว์ขี่ระดับตำนาน', price: 650, icon: '🦄' }
+          ]
+        }
+      ]
+    };
+
+    let storeData = JSON.parse(localStorage.getItem('game_shop_data')) || DEFAULT_DATA;
+    let cart = [];
+
+    function saveStoreData() {
+      localStorage.setItem('game_shop_data', JSON.stringify(storeData));
+    }
+
+    function renderGames() {
+      const grid = document.getElementById('game-grid');
+      grid.innerHTML = '';
+
+      storeData.games.forEach(game => {
+        const isSelected = game.id === storeData.selectedGameId;
+        const card = document.createElement('div');
+        card.className = `cursor-pointer rounded-2xl p-4 border transition duration-200 text-center relative ${
+          isSelected 
+            ? 'bg-amber-500/10 border-amber-500 shadow-lg shadow-amber-500/10 scale-102' 
+            : 'bg-slate-900 border-slate-800 hover:border-slate-700'
+        }`;
+        card.onclick = () => selectGame(game.id);
+
+        card.innerHTML = `
+          <div class="text-3xl mb-2">${game.icon}</div>
+          <h4 class="font-bold text-white text-sm md:text-base">${game.name}</h4>
+          <span class="inline-block mt-2 text-xs font-mono px-2 py-0.5 rounded-full ${
+            isSelected ? 'bg-amber-500/20 text-amber-300' : 'bg-slate-800 text-slate-400'
+          }">
+            เรท ${game.unit} = ${game.ratePrice}฿
+          </span>
+        `;
+        grid.appendChild(card);
+      });
+
+      renderCurrentGameShop();
+    }
+
+    function selectGame(gameId) {
+      storeData.selectedGameId = gameId;
+      saveStoreData();
+      renderGames();
+    }
+
+    function renderCurrentGameShop() {
+      const game = storeData.games.find(g => g.id === storeData.selectedGameId) || storeData.games[0];
+      if (!game) return;
+
+      document.getElementById('calc-game-name').innerText = game.name;
+      document.getElementById('calc-rate-display').innerText = `เรทปัจจุบัน: ${game.unit} = ${game.ratePrice} บาท`;
+      document.getElementById('calc-input-label').innerText = `จำนวน ${game.currencyName} ที่ต้องการ (${game.unit}):`;
+      document.getElementById('item-game-badge').innerText = game.name;
+      
+      calculateCurrency();
+
+      const itemsGrid = document.getElementById('items-grid');
+      itemsGrid.innerHTML = '';
+
+      if (!game.items || game.items.length === 0) {
+        itemsGrid.innerHTML = '<p class="text-slate-500 text-sm py-4">ยังไม่มีไอเทมวางขายในเกมนี้</p>';
+        return;
+      }
+
+      game.items.forEach(item => {
+        const itemCard = document.createElement('div');
+        itemCard.className = 'bg-slate-900/70 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700 transition';
+        itemCard.innerHTML = `
+          <div>
+            <div class="w-12 h-12 bg-slate-800/80 rounded-xl flex items-center justify-center text-2xl mb-3 border border-slate-700">
+              ${item.icon || '📦'}
+            </div>
+            <h4 class="font-bold text-sm text-white">${item.name}</h4>
+            <p class="text-xs text-slate-400 mt-1 line-clamp-2">${item.desc}</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+            <span class="text-amber-400 font-bold font-mono text-base">${item.price} ฿</span>
+            <button onclick="addItemToCart('${game.name}', '${item.name}', ${item.price})" 
+                    class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-cyan-300 text-xs px-3 py-1.5 rounded-lg transition">
+              🛒 สั่งซื้อ
+            </button>
+          </div>
+        `;
+        itemsGrid.appendChild(itemCard);
+      });
+    }
+
+    function calculateCurrency() {
+      const game = storeData.games.find(g => g.id === storeData.selectedGameId);
+      const input = parseFloat(document.getElementById('currency-input').value) || 0;
+      const total = (input / game.rateBase) * game.ratePrice;
+      document.getElementById('calc-price-output').innerText = `${Math.round(total).toLocaleString()} ฿`;
+    }
+
+    function addCurrencyToCart() {
+      const game = storeData.games.find(g => g.id === storeData.selectedGameId);
+      const input = parseFloat(document.getElementById('currency-input').value);
+      if (!input || input <= 0) return alert('กรุณากรอกจำนวนเงินในเกม');
+
+      const total = Math.round((input / game.rateBase) * game.ratePrice);
+      cart.push({
+        title: `เงิน ${game.currencyName} (${input} ${game.unit}) - ${game.name}`,
+        price: total
+      });
+      updateCartUI();
+      openCartModal();
+    }
+
+    function addItemToCart(gameName, itemName, price) {
+      cart.push({
+        title: `${itemName} [${gameName}]`,
+        price: price
+      });
+      updateCartUI();
+      openCartModal();
+    }
+
+    function updateCartUI() {
+      document.getElementById('cart-count').innerText = cart.length;
+      const list = document.getElementById('cart-items-list');
+      list.innerHTML = '';
+
+      let total = 0;
+      cart.forEach((item, index) => {
+        total += item.price;
+        const row = document.createElement('div');
+        row.className = 'flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-xs';
+        row.innerHTML = `
+          <div>
+            <p class="font-medium text-slate-200">${item.title}</p>
+            <p class="text-amber-400 font-mono mt-0.5">${item.price.toLocaleString()} ฿</p>
+          </div>
+          <button onclick="removeCartItem(${index})" class="text-rose-400 hover:text-rose-300 p-1">🗑️</button>
+        `;
+        list.appendChild(row);
+      });
+
+      document.getElementById('cart-total-amount').innerText = `${total.toLocaleString()} ฿`;
+    }
+
+    function removeCartItem(index) {
+      cart.splice(index, 1);
+      updateCartUI();
+    }
+
+    function copyOrderMessage() {
+      if (cart.length === 0) return alert('ไม่มีสินค้าในตะกร้า');
+      const ign = document.getElementById('order-ign').value.trim();
+      const server = document.getElementById('order-server').value.trim();
+      const contact = document.getElementById('order-contact').value.trim();
+
+      if (!ign) return alert('กรุณาระบุชื่อตัวละครในเกม');
+
+      let text = `📦 สรุปใบสั่งซื้อ [RAG SHOP]\n`;
+      text += `--------------------------\n`;
+      cart.forEach((item, i) => {
+        text += `${i+1}. ${item.title} = ${item.price.toLocaleString()} บาท\n`;
+      });
+      text += `--------------------------\n`;
+      text += `💰 ยอดรวมทั้งหมด: ${document.getElementById('cart-total-amount').innerText}\n`;
+      text += `👤 ชื่อตัวละคร (IGN): ${ign}\n`;
+      text += `🌐 เซิร์ฟเวอร์: ${server || '-'}\n`;
+      text += `📞 ติดต่อ: ${contact || '-'}\n`;
+
+      navigator.clipboard.writeText(text).then(() => {
+        alert('คัดลอกข้อความสรุปออเดอร์แล้ว! สามารถนำไปวางส่งใน LINE หรือแชทเพจได้ทันที');
+      });
+    }
+
+    function openCartModal() { document.getElementById('cart-modal').classList.remove('hidden'); }
+    function closeCartModal() { document.getElementById('cart-modal').classList.add('hidden'); }
+    function toggleAdminModal() { document.getElementById('admin-modal').classList.toggle('hidden'); }
+    function toggleAddGameModal() { document.getElementById('add-game-modal').classList.toggle('hidden'); }
+    function toggleAddItemModal() { document.getElementById('add-item-modal').classList.toggle('hidden'); }
+
+    function saveNewGame() {
+      const name = document.getElementById('new-game-name').value.trim();
+      const icon = document.getElementById('new-game-icon').value.trim() || '🎮';
+      const unit = document.getElementById('new-game-unit').value.trim() || 'M';
+      const base = parseFloat(document.getElementById('new-game-base').value) || 1;
+      const price = parseFloat(document.getElementById('new-game-price').value) || 100;
+
+      if (!name) return alert('กรุณากรอกชื่อเกม');
+
+      const id = 'game_' + Date.now();
+      storeData.games.push({
+        id,
+        name,
+        icon,
+        currencyName: unit,
+        unit,
+        rateBase: base,
+        ratePrice: price,
+        items: []
+      });
+
+      storeData.selectedGameId = id;
+      saveStoreData();
+      renderGames();
+      toggleAddGameModal();
+      toggleAdminModal();
+    }
+
+    function saveNewItem() {
+      const game = storeData.games.find(g => g.id === storeData.selectedGameId);
+      const name = document.getElementById('new-item-name').value.trim();
+      const desc = document.getElementById('new-item-desc').value.trim();
+      const price = parseFloat(document.getElementById('new-item-price').value) || 0;
+      const icon = document.getElementById('new-item-icon').value.trim() || '📦';
+
+      if (!name) return alert('กรุณากรอกชื่อไอเทม');
+
+      game.items.push({
+        id: Date.now(),
+        name,
+        desc,
+        price,
+        icon
+      });
+
+      saveStoreData();
+      renderCurrentGameShop();
+      toggleAddItemModal();
+      toggleAdminModal();
+    }
+
+    function resetDefaultData() {
+      if (confirm('ต้องการล้างข้อมูลและรีเซ็ตกลับเป็นค่าเริ่มต้นหรือไม่?')) {
+        localStorage.removeItem('game_shop_data');
+        storeData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+        renderGames();
+        toggleAdminModal();
+      }
+    }
+
+    function scrollToSection(id) {
+      document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // เริ่มต้นระบบ
+    renderGames();
+  </script>
+</body>
+</html>
